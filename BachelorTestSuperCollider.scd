@@ -53,7 +53,6 @@ s.quit;
 ~x.free;
 
 
-Synth.n
 x = Synth.new(\soundTest);
 x = Synth.new(\soundTest, [\ampHz, 3.3, \fund, 48, \ampHz, 1]);
 
