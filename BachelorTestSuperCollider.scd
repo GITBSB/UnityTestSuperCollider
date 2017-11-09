@@ -19,8 +19,6 @@ SynthDef.new(\soundTest, {
 }).add;
 )
 
-
-
 // Test OSC
 OSCdef.new(
 	\test,
@@ -45,13 +43,9 @@ OSCdef.new(
 	nil, 57120
 );
 
-
-
-
 s.quit;
 
 ~x.free;
-
 
 
 x = Synth.new(\soundTest);
@@ -59,4 +53,4 @@ x = Synth.new(\soundTest, [\ampHz, 3.3, \fund, 48, \ampHz, 1]);
 
 x.set(\width, 0.8);
 x.set(\fund, 70);
-x.set(\ampHz, 5);
+x.set(\ampHz, 7);
