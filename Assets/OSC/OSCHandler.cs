@@ -211,7 +211,7 @@ public class OSCHandler : MonoBehaviour
 
         // Limit buffer
         if (packets.Count > _loglength)
-        {
+        {   
             packets.RemoveRange(0, packets.Count - _loglength);
         }
         // Add to OSCPackets list
@@ -231,6 +231,8 @@ public class OSCHandler : MonoBehaviour
 	/// <param name="value">
 	/// A <see cref="T"/>
 	/// </param>
+
+
 	public void SendMessageToClient<T>(string clientId, string address, T value)
 	{
 		List<object> temp = new List<object>();
@@ -252,6 +254,7 @@ public class OSCHandler : MonoBehaviour
 	/// <param name="values">
 	/// A <see cref="List<T>"/>
 	/// </param>
+
 	public void SendMessageToClient<T>(string clientId, string address, List<T> values)
 	{	
 		if(_clients.ContainsKey(clientId))
