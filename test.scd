@@ -68,6 +68,11 @@ c.free;
 d=Synth.new(\bass_Ex );
 
 
+b = NetAddr.new("127.0.0.1", 7777);    // create the NetAddr
+b.sendMsg("/hello", "there");    // send the application the message "hello" with the parameter "there"
+
+
+
 
 
 s.meter;

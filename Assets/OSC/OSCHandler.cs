@@ -98,10 +98,13 @@ public class OSCHandler : MonoBehaviour
         //Example:		
         //CreateClient("SuperCollider", IPAddress.Parse("127.0.0.1"), 5555);
 		CreateClient("SuperCollider", IPAddress.Parse("127.0.0.1"), 57120);
+
+
+		CreateClient("UnityServer", IPAddress.Parse("127.0.0.1"), 7777);
         //Initialize OSC servers (listeners)
         //Example:
 
-        //CreateServer("AndroidPhone", 6666);
+        CreateServer("UnityServer", 7777);
     }
 
     #region Properties
@@ -375,7 +378,6 @@ public class OSCHandler : MonoBehaviour
 			
 			return String.Concat("0",milliseconds.ToString());
 		}
-		
 		return milliseconds.ToString();
 	}
 			

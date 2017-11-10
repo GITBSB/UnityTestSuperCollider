@@ -5,6 +5,6 @@ using UnityEngine;
 public class StopSound : MonoBehaviour {
 
 	void OnMouseEnter() {
-		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/stop", 0);
+		OSCHandler.Instance.SendMessageToClient("UnityServer", "/stop", "testing_value");
 	}
 }
