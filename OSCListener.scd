@@ -1,6 +1,6 @@
 s.boot;
 
-n = NetAddr("127.0.0.1", 57120);
+n = NetAddr("1'27.0.0.1", 57120);
 
 (
 thisProcess.removeOSCRecvFunc(~f);

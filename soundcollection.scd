@@ -24,10 +24,15 @@ SynthDef.new(\pattern_Ex, { arg out, freq = 300, gate = 1, pan = 0, cut = 4000, 
     )
 }).add;
 )
-d=Synth.new(\pattern_Ex);
+d=Synth.new(\pattern_Ex, [\out, 0]);
 
 
 
 
 
 s.freeAll;
+
+
+//TODO: send NodeIds to Unity afte node created, for deletion of effects
+
+//use Server Commands

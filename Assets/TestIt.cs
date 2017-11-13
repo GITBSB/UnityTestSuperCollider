@@ -7,12 +7,15 @@ public class TestIt : MonoBehaviour {
 	void OnMouseDown(){
 
 		List<object> args1 = new List<object>();
-		args1.Add("sine");
-		args1.Add( "x = s.nextNodeID");
+		args1.Add(1000);
 		args1.Add(1);
+		args1.Add(-1);
+		args1.Add(-1);
 		args1.Add(1);
-
-		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/s_new", args1);
+		args1.Add(-1);
+		args1.Add(-1);
+		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/n_end", args1);
+			
 	}
 
 	private void playSynth(string synthName) {

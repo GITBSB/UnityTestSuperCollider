@@ -53,23 +53,41 @@ SynthDef.new(\output, {
 }).add;
 )
 
+~bus = Bus.audio(s, 2);
+~bus2 = Bus.audio(s, 2);
+
+g = Group.new;
+h = Group.new;
+
+a = Synth.head(g, \echo, [\in, ~bus, \out, ~bus]);
+b = Synth.head(g, \reverb, [\in, ~bus, \out, ~bus]);
+c = Synth.head(g, \distort, [\in, ~bus, \out, ~bus]);
+
+y = Synth.tail(g, \output, [\in, ~bus]);
+x = Synth.new(\kick, [\out, ~bus, \amp, 1]);
 
 
-a = Synth.new(\echo, [\in, 25, \out, 25]);
-b = Synth.new(\reverb, [\in, 25, \out, 25]);
-c = Synth.new(\distort, [\in, 25, \out, 25]);
 
-y = Synth.new(\output, [\in, 25]);
-x = Synth.new(\kick, [\out, 25, \amp, 1]);
+k = Synth.head(h, \distort, [\in, ~bus2, \out, ~bus2]);
+f = Synth.head(h, \reverb, [\in, ~bus2, \out, ~bus2]);
+y = Synth.tail(h, \output, [\in, ~bus2]);
+x = Synth.new(\kick, [\out, ~bus, \amp, 1]);
+
+y.nodeID.postln;
+
+SynthDef.removeAt(\output);
+
+g.free
+
 c.free;
 
 
 
 d=Synth.new(\bass_Ex );
 
+s.sendMsg(\n_free, 1000)
 
-
-
+1015.asNodeID.free;
 s.meter;
 s.plotTree;
 
