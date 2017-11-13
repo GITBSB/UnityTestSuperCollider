@@ -30,19 +30,38 @@ public class TestIt : MonoBehaviour {
 		args.Add(synthDef);
 		OSCHandler.Instance.SendMessageToClient("SuperCollider","/synthDef.add", args);
 	}
-
-	private int AddGroup() {
-		OSCHandler.Instance.SendMessageToClient ("SuperCollider", "/group.add", "");
+		
+	private int NewGroup(int groupId) {
+		OSCHandler.Instance.SendMessageToClient ("SuperCollider", "/group.new", groupId);
+		/* wait for answer
 		List<object> msg = oscInitScript.LookForPacket ();
 		if (msg.Count > 0 && (msg [0].ToString () == "/group.nodeID")) {
 			Debug.Log("ID-Valule back:  " + msg[1].ToString());
 			return int.Parse(msg[1].ToString());
 		}
 		return 0;
+		*/
 	}
 
-	private void DeleteGroup(int nodeId) {
-		OSCHandler.Instance.SendMessageToClient ("SuperCollider", "/group.delete", nodeId);
+	private void DeleteNode(int nodeId) {
+		OSCHandler.Instance.SendMessageToClient ("SuperCollider", "/node.delete", nodeId);
+	}
+
+	private void AddEffectToGroup(string effectName, int nodeId, int groupId, int busId) {
+		List<object> args = new List<object> ();
+		args.Add (effectName);
+		args.Add (nodeId);
+		args.Add (groupId);
+		args.Add (busId);
+		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/group.add.effect", args);
+	}
+
+	private void AddOutputSynthToGroup(int nodeId, int groupId, int busId) {
+		List<object> args = new List<object> ();
+		args.Add (nodeId);
+		args.Add (groupId);
+		args.Add (busId);
+		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/group.add.output", args);
 	}
 		
 	private void calladdSynth() {

@@ -1,7 +1,6 @@
-
+s.reboot;
 
 (
-// define an echo effect
 SynthDef.new(\echo, {
 	arg in, out, delay = 0.2, decay = 5;
 	var sig;
@@ -55,31 +54,44 @@ SynthDef.new(\output, {
 
 
 
-a = Synth.new(\echo, [\in, 25, \out, 25]);
-b = Synth.new(\reverb, [\in, 25, \out, 25]);
-c = Synth.new(\distort, [\in, 25, \out, 25]);
-
-y = Synth.new(\output, [\in, 25]);
-x = Synth.new(\kick, [\out, 25, \amp, 1]);
-c.free;
-
-
-
-d=Synth.new(\bass_Ex );
-
-
 b = NetAddr.new("127.0.0.1", 7777);    // create the NetAddr
 b.sendMsg("/hello", "there");    // send the application the message "hello" with the parameter "there"
 
+Group.new()
+Synth.head(~group2, \reverb, [\in, ~bus2, \out, ~bus2]);
+
+~bus1 = Bus.audio(s, 2);
+~bus2 = Bus.audio(s, 2);
 
 
+~group1 = Group.new;
+~group2 = Group.new;
 
+
+s.sendMsg("/g_new", 500);
+s.sendMsg("/s_new", "\distort", 100, 0, 1, "in", ~bus1, "out", ~bus1);
+s.sendMsg("/s_new", "\output", 101, 1, 1002, "in", ~bus1);
+
+s.sendMsg("/g_new", 501, 0, 1);
+s.sendMsg("/s_new", "\echo", 110, 0, 501, "in", ~bus2, "out", ~bus2);
+s.sendMsg("/s_new", "\output", 111, 1, 501, "in", ~bus2);
+
+Synth.new(\kick, [\out, 0, \amp, 1]);
+
+
+s.sendMsg("/d_load", "reverb");
+
+s.sendMsg("/n_free", 101)
 
 s.meter;
 s.plotTree;
 
+
+s.options.numInputBusChannels;
+s.options.numOutputBusChannels;
+s.options.numAudioBusChannels;
+s.options.numControlBusChannels;
 s.freeAll;
 
 
 
-(
