@@ -1,6 +1,8 @@
 s.boot;
 
-n = NetAddr("1'27.0.0.1", 57120);
+
+n = NetAddr("127.0.0.1", 57120);
+u = NetAddr.new("127.0.0.1", 7777);    // Unity port for server
 
 (
 thisProcess.removeOSCRecvFunc(~f);
@@ -20,8 +22,23 @@ thisProcess.removeOSCRecvFunc(~f);
 	};
 	if(msg[0] == '/synthDef.playWithArg') {
 		//TODO: parse msg related to size
-		Synth.new(msg[1], Array.with( msg[2].asSymbol, msg[3],msg[4].asSymbol , msg[5]));
-	}
+		Synth.new(msg[1], Array.with( msg[2].asSymbol,    msg[3],msg[4].asSymbol , msg[5]));
+	};
+	if(msg[0] == '/group.new') {
+		s.sendMsg("/g_new", msg[1], 0, 1);
+		//g = Group.new;
+		//u.sendMsg("/group.nodeID", g.nodeID);
+	};
+	if(msg[0] == '/node.delete') {
+		s.sendMsg("/n_free", msg[1].asNodeID);
+	};
+	if(msg[0] == '/group.add.effect') {
+		s.sendMsg("/s_new", msg[1], msg[2], 0, msg[3], "in", msg[4], "out", msg[4]);
+	};
+	if(msg[0] == '/group.add.output') {
+		s.sendMsg("/s_new", "output", msg[0], 1, msg[2], "in", msg[3]);
+	};
+
 };
 thisProcess.addOSCRecvFunc(~f);
 )
@@ -33,3 +50,11 @@ s.quit
 
 
 s.freeAll;
+
+
+
+/* TODO:
+
+
+Effekte hinzufügen von Unity
+zurücksenden zu Unity möglich? um z.B. node-id von gruppe speichern
