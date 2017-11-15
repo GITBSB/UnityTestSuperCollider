@@ -21,24 +21,30 @@ thisProcess.removeOSCRecvFunc(~f);
 		Synth.new(msg[1]);
 	};
 	if(msg[0] == '/synthDef.playWithArg') {
-		//TODO: parse msg related to size
-		Synth.new(msg[1], Array.with( msg[2].asSymbol,    msg[3],msg[4].asSymbol , msg[5]));
+		Synth.new(msg[1], msg.copyRange(2, msg.size));
+		//s.sendMsg("/s_new", "kick", x=s.nextNodeID, 0, 1,"out", 6, "amp", 1);
 	};
 	if(msg[0] == '/group.new') {
 		s.sendMsg("/g_new", msg[1], 0, 1);
 		//g = Group.new;
 		//u.sendMsg("/group.nodeID", g.nodeID);
 	};
+	if(msg[0] == '/group.add.effect') {
+		// TODO: effekte mit mehr args
+		// Möglichkeit: Synth.tail(2, \output, [\in, 4]); dann aber nodeId zurücksenden
+		// oder Befehl fertig senden und hier mit interpret ausführen
+		s.sendMsg("/s_new", msg[1], msg[2], 0, msg[3], Array.with("in", msg[4], "out", msg[4]).asSpec);
+
+	};
+	if(msg[0] == '/group.add.output') {
+		s.sendMsg("/s_new", "output", msg[1], 1, msg[2], "in", msg[3]);
+	};
+	if(msg[0] == '/node.set.value') {
+		s.sendMsg("/n_set", msg[1], msg[2], msg[3]);
+	};
 	if(msg[0] == '/node.delete') {
 		s.sendMsg("/n_free", msg[1].asNodeID);
 	};
-	if(msg[0] == '/group.add.effect') {
-		s.sendMsg("/s_new", msg[1], msg[2], 0, msg[3], "in", msg[4], "out", msg[4]);
-	};
-	if(msg[0] == '/group.add.output') {
-		s.sendMsg("/s_new", "output", msg[0], 1, msg[2], "in", msg[3]);
-	};
-
 };
 thisProcess.addOSCRecvFunc(~f);
 )
@@ -51,10 +57,19 @@ s.quit
 
 s.freeAll;
 
-
+var y, z;
+y = [1 , 3 ,4, 5,]
+y.postln
+y.takeAt(0);
+y.postln;
 
 /* TODO:
 
-
 Effekte hinzufügen von Unity
-zurücksenden zu Unity möglich? um z.B. node-id von gruppe speichern
+Töne in VR erzeugen
+
+
+note:
+Nodemap: store control values(args) and switch fast to them -> an/aus, settings im spiel festlegen/abspeichern und setting andwenden
+
+

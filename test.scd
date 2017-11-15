@@ -82,12 +82,13 @@ s.sendMsg("/g_new", 501, 0, 1);
 s.sendMsg("/s_new", "\echo", 110, 0, 501, "in", ~bus2, "out", ~bus2);
 s.sendMsg("/s_new", "\output", 111, 1, 501, "in", ~bus2);
 
-Synth.new(\kick, [\out, 0, \amp, 1]);
+Synth.new(\kick, [\out, 4, \amp, 1]);
 
+Synth.tail(2, \output, [\in, 4]);
 
 s.sendMsg("/d_load", "reverb");
 
-s.sendMsg("/n_free", 101)
+s.sendMsg("/n_free", 1024);
 
 s.meter;
 s.plotTree;
@@ -97,7 +98,88 @@ s.options.numInputBusChannels;
 s.options.numOutputBusChannels;
 s.options.numAudioBusChannels;
 s.options.numControlBusChannels;
+
 s.freeAll;
 
 
 
+(
+SynthDef("help-SinOsc", { arg freq=440, out;
+    Out.ar(out, SinOsc.ar(freq, 0, 0.1))
+}).add;
+
+SynthDef("help-XOut", { arg out=0, xFade=1;
+    var source;
+        source = PinkNoise.ar(0.05);
+
+        // write to the bus, crossfading with previous contents
+        XOut.ar(out, xFade, source);
+
+}).add;
+)
+
+Synth("help-SinOsc", [\freq, 500]);
+a = Synth.tail(s, "help-XOut");
+
+
+a.set(\xFade, 0.7);
+a.set(\xFade, 0.4);
+a.set(\xFade, 0.0);
+
+
+
+
+
+
+
+
+
+
+
+
+
+s.boot;
+
+(
+SynthDef("modsine",
+    { arg freq=320, amp=0.2;
+        Out.ar(0, SinOsc.ar(freq, 0, amp));
+    }).add;
+SynthDef("lfo",
+    { arg rate=2, busNum=0;
+        Out.kr(busNum, LFPulse.kr(rate, 0, 0.1, 0.2))
+    }).add;
+)
+
+//start nodes
+(
+b = Bus.control(s,1);
+x = Synth("modsine");
+y = Synth.before(x, "lfo", [\busNum, b]);
+)
+
+//create some node maps
+(
+h = NodeMap.new;
+h.set(\freq, 800);
+h.map(\amp, b);
+
+k = NodeMap.new;
+k.set(\freq, 400);
+k.unmap(\amp);
+)
+
+//apply the maps
+
+h.sendToNode(x); //the first time a new bundle is made
+k.sendToNode(x);
+
+h.sendToNode(x); //the second time the cache is used
+k.sendToNode(x);
+
+h.set(\freq, 600);
+
+h.sendToNode(x); //when a value was changed, a new bundle is made
+
+//free all
+x.free; b.free; y.free;

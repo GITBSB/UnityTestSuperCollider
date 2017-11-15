@@ -8,31 +8,36 @@ public class TestIt : MonoBehaviour {
 	int nodeID;
 
 	void OnMouseEnter() {
-		nodeID = AddGroup ();
-		Debug.Log("nodeID" + nodeID);
+		NewGroup(2);
+		NewGroup(3);
+		AddEffectToGroup("distort", 100, 2, 4);
+		AddOutputSynthToGroup(101, 2, 4);
+
+		AddEffectToGroup("echo", 102, 3, 6);
+		AddOutputSynthToGroup(103, 3, 6);
 	}
 
 	void OnMouseExit() {
-		DeleteGroup(nodeID);
+		
 
 	}
 
-	private void PlaySynth(string synthName) {
+	public void PlaySynth(string synthName) {
 		OSCHandler.Instance.SendMessageToClient("SuperCollider","/synthDef.play", synthName);
 	}
 
-	private void PlayWithArgs(List<object> args) {
+	public void PlaySynthWithArgs(List<object> args) {
 		OSCHandler.Instance.SendMessageToClient("SuperCollider","/synthDef.playWithArg", args);
 	}
 
-	private void AddSynth(string synthName, string synthDef) {
+	public void AddSynth(string synthName, string synthDef) {
 		List<object> args = new List<object>();
 		args.Add(synthName);
 		args.Add(synthDef);
 		OSCHandler.Instance.SendMessageToClient("SuperCollider","/synthDef.add", args);
 	}
 		
-	private int NewGroup(int groupId) {
+	public void NewGroup(int groupId) {
 		OSCHandler.Instance.SendMessageToClient ("SuperCollider", "/group.new", groupId);
 		/* wait for answer
 		List<object> msg = oscInitScript.LookForPacket ();
@@ -44,11 +49,11 @@ public class TestIt : MonoBehaviour {
 		*/
 	}
 
-	private void DeleteNode(int nodeId) {
+	public void DeleteNode(int nodeId) {
 		OSCHandler.Instance.SendMessageToClient ("SuperCollider", "/node.delete", nodeId);
 	}
 
-	private void AddEffectToGroup(string effectName, int nodeId, int groupId, int busId) {
+	public void AddEffectToGroup(string effectName, int nodeId, int groupId, int busId) {
 		List<object> args = new List<object> ();
 		args.Add (effectName);
 		args.Add (nodeId);
@@ -57,15 +62,23 @@ public class TestIt : MonoBehaviour {
 		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/group.add.effect", args);
 	}
 
-	private void AddOutputSynthToGroup(int nodeId, int groupId, int busId) {
+	public void AddOutputSynthToGroup(int nodeId, int groupId, int busId) {
 		List<object> args = new List<object> ();
 		args.Add (nodeId);
 		args.Add (groupId);
 		args.Add (busId);
 		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/group.add.output", args);
 	}
+
+	public void SetNodeValue(int nodeId, string controlName, int controlValue) {
+		List<object> args = new List<object> ();
+		args.Add (nodeId);
+		args.Add (controlName);
+		args.Add (controlValue);
+		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/node.set.value", args);
+	}
 		
-	private void calladdSynth() {
+	private void CalladdSynth() {
 		// addSynth call
 		string synthDef = "SynthDef.new(\\openhat, {"
 			+ "var hatosc, hatenv, hatnoise, hatoutput;"
@@ -77,19 +90,16 @@ public class TestIt : MonoBehaviour {
 		
 		AddSynth("openhat", synthDef);
 	}
+		
 
-	private void callPlayWithArgs() {
+	public void CallPlayWithArgs() {
 		// playWithArgs call
 		List<object> args = new List<object>();
-		args.Add("tom");
+		args.Add("kick");
 		args.Add("out");
-		args.Add(0);
+		args.Add(4);
 		args.Add("amp");
-		args.Add(0.5);
-		PlayWithArgs(args);
+		args.Add(1);
+		PlaySynthWithArgs(args);
 	}
-
-
-
-
 }
