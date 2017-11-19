@@ -75,7 +75,7 @@ Synth.head(~group2, \reverb, [\in, ~bus2, \out, ~bus2]);
 
 
 s.sendMsg("/g_new", 500);
-s.sendMsg("/s_new", "\distort", 100, 0, 1, "in", ~bus1, "out", ~bus1);
+s.sendMsg("/s_new", "\moogff", 100, 0, 1, "in", ~bus1, "out", ~bus1);
 s.sendMsg("/s_new", "\output", 101, 1, 1002, "in", ~bus1);
 
 s.sendMsg("/g_new", 501, 0, 1);
@@ -131,55 +131,23 @@ a.set(\xFade, 0.0);
 
 
 
-
-
-
-
-
-
-
-s.boot;
-
 (
-SynthDef("modsine",
-    { arg freq=320, amp=0.2;
-        Out.ar(0, SinOsc.ar(freq, 0, amp));
-    }).add;
-SynthDef("lfo",
-    { arg rate=2, busNum=0;
-        Out.kr(busNum, LFPulse.kr(rate, 0, 0.1, 0.2))
-    }).add;
+SynthDef.new(\moogff, {
+	arg in, out;
+	var sig;
+	sig = In.ar(in, 2);
+	sig = MoogFF.ar(sig);
+	Out.ar(out, sig);
+}).add;
 )
 
-//start nodes
+
 (
-b = Bus.control(s,1);
-x = Synth("modsine");
-y = Synth.before(x, "lfo", [\busNum, b]);
+x = {
+    MoogFF.ar(
+        Pulse.ar([40,121], [0.3,0.7]),
+        SinOsc.kr(LFNoise0.kr(0.42).range(0.001, 2.2)).range(30, 4200),
+        0.83 * 4)}.play(s);
 )
 
-//create some node maps
-(
-h = NodeMap.new;
-h.set(\freq, 800);
-h.map(\amp, b);
-
-k = NodeMap.new;
-k.set(\freq, 400);
-k.unmap(\amp);
-)
-
-//apply the maps
-
-h.sendToNode(x); //the first time a new bundle is made
-k.sendToNode(x);
-
-h.sendToNode(x); //the second time the cache is used
-k.sendToNode(x);
-
-h.set(\freq, 600);
-
-h.sendToNode(x); //when a value was changed, a new bundle is made
-
-//free all
-x.free; b.free; y.free;
+x.free;

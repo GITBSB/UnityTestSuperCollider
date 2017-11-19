@@ -9,7 +9,6 @@ SynthDef.new(\echo, {
 }).add;
 )
 
-
 (
 SynthDef.new(\reverb, {
 	arg in, out;
@@ -29,17 +28,6 @@ SynthDef.new(\distort, {
     XOut.ar(out, env, (sig * pregain).distort * amp);
 }, [\ir, 0.1, 0.1, 0]).add;
 )
-
-(
-SynthDef.new(\distort, {
-	arg in, out, pregain=40, amp=0.2, gate=1;
-    var env, sig;
-    env = Linen.kr(gate, 0.05, 1, 0.1, 2);
-	sig = In.ar(in, 2);
-    XOut.ar(out, env, (sig * pregain).distort * amp);
-}, [\ir, 0.1, 0.1, 0]).add;
-)
-
 
 (
 SynthDef.new(\kick, {
@@ -121,14 +109,13 @@ e = Synth.tail(~group2, \output, [\in, ~bus2]);
 
 ~bus2.index;
 
-
 s.sendMsg("/g_new", 2, 0, 1);
 s.sendMsg("/g_new", 3, 0, 1);
 
-s.sendMsg("/s_new", "rlpf", 101, 0, 2, "in", 4, "out", 4);
+s.sendMsg("/s_new", "echo", 101, 0, 2, "in", 4, "out", 4);
 s.sendMsg("/s_new", "output", 102, 1, 2, "in", 4);
 
-s.sendMsg("/s_new", "distort", 103, 0, 3, "in", 6, "out", 6);
+s.sendMsg("/s_new", "reverb", 103, 0, 3, "in", 6, "out", 6);
 s.sendMsg("/s_new", "output", 104, 1, 3,"in", 6);
 
 a = Synth.head(2, \echo, [\in, 4, \out, 4, \nodeId, 4]);
@@ -141,7 +128,7 @@ s.sendMsg("/s_new", "kick", x=s.nextNodeID, 0, 1,"out", 4, "amp", 1);
 s.sendMsg("/n_free", 101)
 s.sendMsg("/g_freeAll", 2)
 
-s.sendMsg("/n_set", 3, "out", 8, "in", 8);
+s.sendMsg("/n_set", 3, "out", 6, "in", 6);
 s.sendMsg("/n_set", 2, "out", 4, "in", 4);
 ~group2.set(\in, 6)
 ~group2.set(\out, 6)

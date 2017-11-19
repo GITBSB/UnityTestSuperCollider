@@ -1,9 +1,11 @@
 s.boot;
-
+(
 
 n = NetAddr("127.0.0.1", 57120);
 u = NetAddr.new("127.0.0.1", 7777);    // Unity port for server
 
+
+)
 (
 thisProcess.removeOSCRecvFunc(~f);
 ~f = { |msg, time, replyAddr, recvPort|
@@ -31,10 +33,10 @@ thisProcess.removeOSCRecvFunc(~f);
 	};
 	if(msg[0] == '/group.add.effect') {
 		// TODO: effekte mit mehr args
-		// Möglichkeit: Synth.tail(2, \output, [\in, 4]); dann aber nodeId zurücksenden
+		// Möglichkeit:  dann aber nodeId zurücksenden
 		// oder Befehl fertig senden und hier mit interpret ausführen
-		s.sendMsg("/s_new", msg[1], msg[2], 0, msg[3], Array.with("in", msg[4], "out", msg[4]).asSpec);
-
+		s.sendMsg("/s_new", msg[1], msg[2], 0, msg[3], "in", msg[4], "out", msg[4]);
+		// solution: durch n_set control values setzen
 	};
 	if(msg[0] == '/group.add.output') {
 		s.sendMsg("/s_new", "output", msg[1], 1, msg[2], "in", msg[3]);
@@ -45,6 +47,13 @@ thisProcess.removeOSCRecvFunc(~f);
 	if(msg[0] == '/node.delete') {
 		s.sendMsg("/n_free", msg[1].asNodeID);
 	};
+	if(msg[0] == '/recording.start') {
+		s.recHeaderFormat = msg[1];
+		s.recSampleFormat.postln
+	};
+	if(msg[0] == '/recording.stop') {
+		s.stopRecording;
+	}
 };
 thisProcess.addOSCRecvFunc(~f);
 )
@@ -57,19 +66,33 @@ s.quit
 
 s.freeAll;
 
-var y, z;
-y = [1 , 3 ,4, 5,]
-y.postln
-y.takeAt(0);
-y.postln;
+s.volume.max
+
+
 
 /* TODO:
 
-Effekte hinzufügen von Unity
-Töne in VR erzeugen
+Töne in VR erzeugen -  wie? von Grund auf? vorerst vorgegebene Töne
+
+Synths in Enums speichern, dass man weiß welche zur Verfügung stehen
+
+beim laden von weiterer Datei oder string in Unity
+
+mp3,.wav buffern und abspielen
+
+weitere Effekte hinzufügen
+
+listen mit vorhandenen gruppen verwalten
+
+master volume implementieren: group 0, setservervolume
+
+evtl. Gruppen, Effekte darstellen
 
 
-note:
+
+
+NOTE:
 Nodemap: store control values(args) and switch fast to them -> an/aus, settings im spiel festlegen/abspeichern und setting andwenden
+
 
 
