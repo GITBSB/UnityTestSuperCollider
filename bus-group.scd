@@ -19,7 +19,6 @@ SynthDef.new(\reverb, {
 }).add;
 )
 
-(
 SynthDef.new(\distort, {
 	arg in, out, pregain=40, amp=0.2, gate=1;
     var env, sig;
@@ -99,7 +98,7 @@ SynthDef.new(\output, {
 ~bus2 = Bus.audio(s, 2);
 
 a = Synth.head(~group1, \echo, [\in, ~bus1, \out, ~bus1]);
-b = Synth.tail(~group1, \output, [\in, ~bus1]);
+b = Synth.tail(~group1, "output", [\in, ~bus1]);
 
 c = Synth.head(~group1, \reverb, [\in, ~bus2, \out, ~bus2]);
 d = Synth.head(~group2, \distort, [\in, ~bus2, \out, ~bus2]);
@@ -132,7 +131,7 @@ s.sendMsg("/n_set", 3, "out", 6, "in", 6);
 s.sendMsg("/n_set", 2, "out", 4, "in", 4);
 ~group2.set(\in, 6)
 ~group2.set(\out, 6)
-Synth.new(\kick, [\out, 4, \amp, 1]);
+Synth.new(\kick, [\out, 18, \amp, 1]);
 Synth.new(\kick, [\out, 6, \amp, 1]);
 
 s.meter;

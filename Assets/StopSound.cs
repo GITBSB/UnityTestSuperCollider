@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class StopSound : MonoBehaviour {
-	public TestIt oscInterface;
+	public SCInterface sci;
+
+	void Start() {
+		sci = SCInterface.Instace;
+	}
 
 	void OnMouseEnter() {
 		List<object> args = new List<object>();
@@ -12,7 +16,7 @@ public class StopSound : MonoBehaviour {
 		args.Add(4);
 		args.Add("amp");
 		args.Add(1);
-		oscInterface.PlaySynthWithArgs(args);
+		sci.PlaySynthWithArgs(args);
 	}
 
 	void OnMouseExit() {
@@ -22,7 +26,7 @@ public class StopSound : MonoBehaviour {
 		args.Add(6);
 		args.Add("amp");
 		args.Add(1);
-		oscInterface.PlaySynthWithArgs(args);
+		sci.PlaySynthWithArgs(args);
 
 	}
 }

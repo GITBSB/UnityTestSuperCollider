@@ -55,6 +55,8 @@ public struct ClientLog
 /// </summary>
 public class OSCHandler : MonoBehaviour
 {
+
+
 	#region Singleton Constructors
 	static OSCHandler()
 	{
@@ -82,7 +84,7 @@ public class OSCHandler : MonoBehaviour
 	private static OSCHandler _instance = null;
 	private Dictionary<string, ClientLog> _clients = new Dictionary<string, ClientLog>();
 	private Dictionary<string, ServerLog> _servers = new Dictionary<string, ServerLog>();
-    public List<OSCPacket> packets = new List<OSCPacket>();
+    private List<OSCPacket> packets = new List<OSCPacket>();
 
 	
 	private const int _loglength = 100;
@@ -212,13 +214,15 @@ public class OSCHandler : MonoBehaviour
         // Remember origin
         packet.server = server;
 
-        // Limit buffer
-        if (packets.Count > _loglength)
-        {   
-            packets.RemoveRange(0, packets.Count - _loglength);
-        }
-        // Add to OSCPackets list
-        packets.Add(packet);
+		lock(packets) {
+	        // Limit buffer
+	        if (packets.Count > _loglength)
+	        {   
+	            packets.RemoveRange(0, packets.Count - _loglength);
+	        }
+	        // Add to OSCPackets list
+	        packets.Add(packet);
+		}
     }
 	
 	/// <summary>
@@ -379,6 +383,25 @@ public class OSCHandler : MonoBehaviour
 			return String.Concat("0",milliseconds.ToString());
 		}
 		return milliseconds.ToString();
+	}
+
+	/// <summary>
+	/// Looks for packet.
+	/// </summary>
+	/// <returns>The for packet.</returns>
+	public List<object> LookForPacket() {
+		List<object> msg = new List<object>();
+		while (true) {
+			if(packets.Count > 0) {
+				lock(packets) {
+					msg.Add(packets[0].Address);
+					msg.Add(packets[0].Data[0].ToString());	
+					packets.RemoveAt (0);
+
+					return msg;
+				}
+			}
+		}
 	}
 			
 	#endregion

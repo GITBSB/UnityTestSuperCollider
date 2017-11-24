@@ -1,11 +1,10 @@
 s.boot;
-(
 
+(
 n = NetAddr("127.0.0.1", 57120);
 u = NetAddr.new("127.0.0.1", 7777);    // Unity port for server
-
-
 )
+
 (
 thisProcess.removeOSCRecvFunc(~f);
 ~f = { |msg, time, replyAddr, recvPort|
@@ -24,19 +23,20 @@ thisProcess.removeOSCRecvFunc(~f);
 	};
 	if(msg[0] == '/synthDef.playWithArg') {
 		Synth.new(msg[1], msg.copyRange(2, msg.size));
-		//s.sendMsg("/s_new", "kick", x=s.nextNodeID, 0, 1,"out", 6, "amp", 1);
 	};
 	if(msg[0] == '/group.new') {
 		s.sendMsg("/g_new", msg[1], 0, 1);
-		//g = Group.new;
-		//u.sendMsg("/group.nodeID", g.nodeID);
+	};
+	if(msg[0] == '/group.new2') {
+		g = Group.new;
+		u.sendMsg("/group.nodeID", g.nodeID);
 	};
 	if(msg[0] == '/group.add.effect') {
-		// TODO: effekte mit mehr args
-		// Möglichkeit:  dann aber nodeId zurücksenden
-		// oder Befehl fertig senden und hier mit interpret ausführen
 		s.sendMsg("/s_new", msg[1], msg[2], 0, msg[3], "in", msg[4], "out", msg[4]);
-		// solution: durch n_set control values setzen
+	};
+	if(msg[0] == '/group.add.effect2') {
+		a = Synth.head(msg[1], msg[2], msg.copyRange(3, msg.size));
+		u.sendMsg("/effect.nodeID", a.nodeID);
 	};
 	if(msg[0] == '/group.add.output') {
 		s.sendMsg("/s_new", "output", msg[1], 1, msg[2], "in", msg[3]);
@@ -53,7 +53,12 @@ thisProcess.removeOSCRecvFunc(~f);
 	};
 	if(msg[0] == '/recording.stop') {
 		s.stopRecording;
-	}
+	};
+	if(msg[0] == '/bus.getID') {
+		b = Bus.audio(s, 2);
+		u.sendMsg("/bus.ID", b.index);
+
+	};
 };
 thisProcess.addOSCRecvFunc(~f);
 )
@@ -75,8 +80,7 @@ s.volume.max
 Töne in VR erzeugen -  wie? von Grund auf? vorerst vorgegebene Töne
 
 Synths in Enums speichern, dass man weiß welche zur Verfügung stehen
-
-beim laden von weiterer Datei oder string in Unity
+beim laden von weiterer Datei /d_load oder string in Unity
 
 mp3,.wav buffern und abspielen
 
@@ -84,7 +88,7 @@ weitere Effekte hinzufügen
 
 listen mit vorhandenen gruppen verwalten
 
-master volume implementieren: group 0, setservervolume
+master volume implementieren: group 0, -> über digitalen Bus leiten
 
 evtl. Gruppen, Effekte darstellen
 
