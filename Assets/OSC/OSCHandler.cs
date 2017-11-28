@@ -389,6 +389,34 @@ public class OSCHandler : MonoBehaviour
 	/// Looks for packet.
 	/// </summary>
 	/// <returns>The for packet.</returns>
+	/// <param name="address">Address.</param>
+	public String LookForPacket(string address) {
+		string message = null;
+		OSCPacket oldPacket = null;
+		while (true) {
+			if (packets.Count > 0) {
+				lock (packets) {
+					foreach (OSCPacket packet in packets) {
+						if (packet.Address == address) {
+							message = packet.Data [0].ToString ();
+							oldPacket = packet;
+							break;
+						}
+					}
+					if (oldPacket != null) {
+						packets.Remove (oldPacket);
+						return message;
+
+					}
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// Looks for packet.
+	/// </summary>
+	/// <returns>The for packet.</returns>
 	public List<object> LookForPacket() {
 		List<object> msg = new List<object>();
 		while (true) {

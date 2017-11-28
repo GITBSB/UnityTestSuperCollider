@@ -68,12 +68,13 @@ thisProcess.removeOSCRecvFunc(~f);
 s.quit
 )
 
+s.plotTree;
 
 s.freeAll;
 
 s.volume.max
 
-
+s
 
 /* TODO:
 
@@ -91,6 +92,9 @@ listen mit vorhandenen gruppen verwalten
 master volume implementieren: group 0, -> über digitalen Bus leiten
 
 evtl. Gruppen, Effekte darstellen
+
+
+
 
 
 

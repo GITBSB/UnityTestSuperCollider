@@ -129,9 +129,9 @@ s.sendMsg("/g_freeAll", 2)
 
 s.sendMsg("/n_set", 3, "out", 6, "in", 6);
 s.sendMsg("/n_set", 2, "out", 4, "in", 4);
-~group2.set(\in, 6)
-~group2.set(\out, 6)
-Synth.new(\kick, [\out, 18, \amp, 1]);
+~group2.set(\in, 6);
+~group2.set(\out, 6);
+Synth.new(\kick, [\out, 4, \amp, 1]);
 Synth.new(\kick, [\out, 6, \amp, 1]);
 
 s.meter;
