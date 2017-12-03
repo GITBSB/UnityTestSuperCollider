@@ -100,6 +100,108 @@ SynthDef(\effecttemplate,{
 )
 */
 
+(
+SynthDef(\GVerb,{
+	arg in, out, amp=1,
+	atk=0.02, rel=0.1, crv=-2, gate=1,
+	roomsize = 10, revtime = 3, damping=0.5 /* 0-1 */, inputbw = 0.5 /* 0-1 */, spread = 15, drylevel = 1, earlyreflevel = 0.7, taillevel = 0.5, maxroomsize = 300, mul = 1, add = 0;
+	var sig, env, source;
+	env = EnvGEn.ar(Env.asr(atk, 1, rel, crv), gate );
+	source = In.ar(in);
+	sig = GVerb.ar(in, roomsize, revtime, damping, inputbw, spread, drylevel, earlyreflevel, taillevel, maxroomsize, mul, add);
+	Out.ar.(out, sig*amp*env);
+}).add;
+)
+
+(
+SynthDef(\FreeVerb,{
+	arg in, out, amp=1,
+	atk=0.02, rel=0.1, crv=-2, gate=1,
+	mix = 0.33, room = 0.5, damp = 0.5, mul = 1, add = 0;
+	var sig, env, source;
+	env = EnvGEn.ar(Env.asr(atk, 1, rel, crv), gate );
+	source = In.ar(in);
+	sig = FreeVerb.ar(in, mix, room, damp, mul, add)
+	Out.ar.(out, sig*amp*env);
+}).add;
+)
+
+(
+SynthDef(\LowPass,{
+	arg in, out, amp=1,
+	atk=0.02, rel=0.1, crv=-2, gate=1;
+	var sig, env, source;
+	env = EnvGEn.ar(Env.asr(atk, 1, rel, crv), gate );
+	source = In.ar(in);
+	sig = FX(source);
+	Out.ar.(out, sig*amp*env);
+}).add;
+)
+
+(
+SynthDef(\RHPF,{
+	arg in, out, amp=1,
+	atk=0.02, rel=0.1, crv=-2, gate=1,
+	freq=440, rq=1, mul=1, add=0;
+	var sig, env, source;
+	env = EnvGEn.ar(Env.asr(atk, 1, rel, crv), gate );
+	source = In.ar(in);
+	sig = RHPF.ar(in, freq, rq, mul, add);
+	Out.ar.(out, sig*amp*env);
+}).add;
+)
+
+(
+SynthDef(\RLPF,{
+	arg in, out, amp=1,
+	atk=0.02, rel=0.1, crv=-2, gate=1,
+	freq=440, rq=1, mul=1, add=0;
+	var sig, env, source;
+	env = EnvGEn.ar(Env.asr(atk, 1, rel, crv), gate );
+	source = In.ar(in);
+	sig = RLPF.ar(in, freq, rq, mul, add);
+	Out.ar.(out, sig*amp*env);
+}).add;
+)
+
+(
+SynthDef(\BPF,{
+	arg in, out, amp=1,
+	atk=0.02, rel=0.1, crv=-2, gate=1,
+	freq=440, rq=1, mul=1, add=0;
+	var sig, env, source;
+	env = EnvGEn.ar(Env.asr(atk, 1, rel, crv), gate );
+	source = In.ar(in);
+	sig = BPF.ar(in, freq, rq, mul, add);
+	Out.ar.(out, sig*amp*env);
+}).add;
+)
+
+(
+SynthDef(\HPF,{
+	arg in, out, amp=1,
+	atk=0.02, rel=0.1, crv=-2, gate=1,
+	freq=440, mul=1, add=0;
+	var sig, env, source;
+	env = EnvGEn.ar(Env.asr(atk, 1, rel, crv), gate );
+	source = In.ar(in);
+	sig = HPF.ar(in, freq, mul, add);
+	Out.ar.(out, sig*amp*env);
+}).add;
+)
+
+(
+SynthDef(\LPF,{
+	arg in, out, amp=1,
+	atk=0.02, rel=0.1, crv=-2, gate=1,
+	freq=440, mul=1, add=0;
+	var sig, env, source;
+	env = EnvGEn.ar(Env.asr(atk, 1, rel, crv), gate );
+	source = In.ar(in);
+	sig = HPF.ar(in, freq, mul, add);
+	Out.ar.(out, sig*amp*env);
+}).add;
+)
 
 
 
@@ -391,6 +493,36 @@ SynthDef( \lead, {
 	Out.ar(0, [sig, sig2]*amp*env*env2);
 }).add;
 )
+
+
+
+(
+SynthDef(\bpfsaw, {
+	arg atk=2, sus=0, rel=3, ts=1, c1=1, c2=(-1), freq=500, detune=0.02, pan=0, cfhzmin=0.1, cfhzmax=0.1, cfmin=500, cfmax=500, rqmin=0.1, rqmax=0.2, lsf=200, ldb=0, amp=1, out=0, decay=0.6, len=1;
+	var sig, env, env2;
+	env = EnvGen.kr(Env([0,1,1,0],[atk,sus,rel],[c1,0,c2]),doneAction:2);
+	env2 = EnvGen.kr(
+			Env.new(
+				[0.001,1,decay,0.001],
+				[0.025, len,0.02]*(1/5),
+				\exponential),
+			doneAction:2);
+	sig = Saw.ar(freq*{LFNoise1.kr(0.5,detune).midiratio}!2);
+	sig = BPF.ar(
+		sig,
+		{LFNoise1.kr(
+			LFNoise1.kr(4).exprange(cfhzmin,cfhzmax)
+		).exprange(cfmin,cfmax)}!2,
+		{LFNoise1.kr(0.1).exprange(rqmin,rqmax)}!2
+	);
+	sig = BLowShelf.ar(sig,lsf,0.5,ldb);
+	sig = Balance2.ar(sig[0],sig[1],pan);
+	sig = sig*env2*amp;
+	Out.ar(out,sig);
+}).add;
+);
+
+Synth(\bpfsaw, [\freq, 100, \c1, 0.05, \c2, -0.05])
 
 Synth(\lead, [\pitch, 40, \len, 0.4]);
 

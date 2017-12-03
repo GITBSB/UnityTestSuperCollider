@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class SCInterface : MonoBehaviour {
-
-	//TODO: OSC Handler nur von hier zugreifbar machen
-
+	
 	#region Singleton Constructor
 	static SCInterface(){}
 
@@ -21,169 +19,161 @@ public class SCInterface : MonoBehaviour {
 
 	#region Member Variables
 	private static SCInterface _instance = null;
-	private Dictionary<int, int> _groupBus = new Dictionary<int, int> ();
+	private OSCHandler _oscHandler;
+	private string _clientId = "SuperCollider";
 
 	#endregion
 
 	#region Methods
-	public void PlaySynth(string synthName) {
-		OSCHandler.Instance.SendMessageToClient("SuperCollider","/synthDef.play", synthName);
+
+	void Start() {
+		_oscHandler = OSCHandler.Instance;
 	}
 
-	public void PlaySynthWithArgs(List<object> args) {
-		OSCHandler.Instance.SendMessageToClient("SuperCollider","/synthDef.playWithArg", args);
-	}
+    //TODO: Not working!!!
+    /// <summary>
+    /// Clean-up and shutdown SuperCollider
+    /// </summary>
+    void OnDisable()
+    {
+        //find another wa
+       // SendMessageToClient("SuperCollider", "/exitSuperCollider", "");
+    }
 
-	public void AddSynth(string synthDef) {
-		List<object> args = new List<object>();
-		args.Add(MemberInfoGetting.GetMemberName(() => synthDef));
-		args.Add(synthDef);
-		OSCHandler.Instance.SendMessageToClient("SuperCollider","/synthDef.add", args);
-	}
+    //TODO:
+    /// <summary>
+    /// Start SuperCollider
+    /// </summary>
+    void OnEnable()
+    {
 
+    }
 
-	private void NewGroupWithNodeId(int groupId) {
-		OSCHandler.Instance.SendMessageToClient ("SuperCollider", "/group.new", groupId);
-	}
+    public void PlaySynthDef(string synthName, List<object> controlValues)
+    {
+        if(controlValues == null)
+        {
+            _oscHandler.SendMessageToClient(_clientId, "/synthDef.play", synthName);
+        } else
+        {
+            controlValues.Insert(0, synthName);
+            _oscHandler.SendMessageToClient(_clientId, "/synthDef.play", controlValues);
+        }
+    }
 
-	private int NewGroup() {
-		OSCHandler.Instance.SendMessageToClient ("SuperCollider", "/group.new2", "");
-		List<object> msg = OSCHandler.Instance.LookForPacket ();
-		if (msg.Count > 0 && (msg [0].ToString () == "/group.nodeID")) {
-			return int.Parse(msg[1].ToString());
-		}
-		Debug.LogError ("NewGroup: no response from SuperCollider");
-		return 0;
-	}
-		
+    public void CreateNewSynth(string synthName, int synthId, int action, int targetId, int inBus, int outBus, List<object> controlValues)
+    {
+        List<object> args = new List<object>();
+        args.Add(synthName);
+        args.Add(synthId);
+        args.Add(action);
+        args.Add(targetId);
+        args.Add("in");
+        args.Add(inBus);
+        args.Add("out");
+        args.Add(outBus);
 
-	public void DeleteNode(int nodeId) {
-		OSCHandler.Instance.SendMessageToClient ("SuperCollider", "/node.delete", nodeId);
-	}
+        _oscHandler.SendMessageToClient(_clientId, "/synthDef.create", args);
+        // set controlValues if existing
+        if (controlValues != null)
+        {
+            foreach (KeyValuePair<string, int> pair in controlValues)
+            {
+                SetNodeValue(synthId, pair.Key, pair.Value);
+            }
+        }
+    }
 
-	public void AddEffectToGroupWithNodeID(string effectName, int groupId, int nodeId, Dictionary<string, int> controlValues) {
-		if (_groupBus.ContainsKey (groupId)) {
-			int busId = _groupBus [groupId];
-			List<object> args = new List<object> ();
-			args.Add (effectName);
-			args.Add (nodeId);
-			args.Add (groupId);
-			args.Add (busId);
-			OSCHandler.Instance.SendMessageToClient ("SuperCollider", "/group.add.effect", args);
+    public int CreateNewSynth(string effectName, int groupId, int inBus, int outBus, List<object> controlValues)
+    {
+        List<object> args = new List<object>();
+        args.Add(groupId);
+        args.Add(effectName);
+        args.Add("in");
+        args.Add(inBus);
+        args.Add("out");
+        args.Add(outBus);
 
-			// set controlValues if existing
-			if (controlValues != null) {
-				foreach (KeyValuePair<string, int> pair in controlValues) {
-					SetNodeValue (nodeId, pair.Key, pair.Value);
-				}
-			}
-		} else {
-			Debug.LogError (string.Format ("AddEffectToGroup: Group {0} not existing", groupId));
-		}
-	}
+        if (controlValues != null)
+        {
+            args.AddRange(controlValues);
+        }
+        _oscHandler.SendMessageToClient(_clientId, "/synthDef.create_2", args);
+        // wait for message with nodeId
+        List<object> msg = _oscHandler.LookForPacket();
+        if (msg.Count > 0 && (msg[0].ToString() == "/effect.nodeID"))
+        {
+            return int.Parse(msg[1].ToString());
+        }
+        return -1;
+    }
 
-	public int AddEffectToGroup(string effectName, int groupId, List<object> controlValues) {
-		if (_groupBus.ContainsKey (groupId)) {
-			int busId = _groupBus [groupId];
-			List<object> args = new List<object> ();
-			args.Add (groupId);
-			args.Add (effectName);
-			args.Add ("in");
-			args.Add (busId);
+    public void CreateGroup(int groupId)
+    {
+        _oscHandler.SendMessageToClient(_clientId, "/group.create", groupId);
+    }
 
-			//TODO: change to inout with all effect?
-			if (effectName != "output") {
-				args.Add ("out");
-				args.Add (busId);
-			}
-			if (controlValues != null) {
-				args.AddRange (controlValues);
-			}
-			OSCHandler.Instance.SendMessageToClient ("SuperCollider", "/group.add.effect2", args);
-			// wait for message with nodeId
-			List<object> msg = OSCHandler.Instance.LookForPacket ();
-			if (msg.Count > 0 && (msg [0].ToString () == "/effect.nodeID")) {
-				return int.Parse (msg [1].ToString ());
-			}
-		}
-		Debug.LogError(string.Format("AddEffectToGroup: Group {0} not existing", groupId));
-		return 0;
-	}
+    public int CreateGroup()
+    {
+        _oscHandler.SendMessageToClient(_clientId, "/group.create_2", "");
+        return LookForPacket("/group.nodeID");
+    }
 
-	public void AddOutputSynthToGroup(int nodeId, int groupId, int busId) {
-		List<object> args = new List<object> ();
-		args.Add (nodeId);
-		args.Add (groupId);
-		args.Add (busId);
-		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/group.add.output", args);
-	}
+    public void SetNodeValue(int nodeId, string controlName, double controlValue)
+    {
+        List<object> args = new List<object>();
+        args.Add(nodeId);
+        args.Add(controlName);
+        args.Add(controlValue);
+        _oscHandler.SendMessageToClient(_clientId, "/node.set.value", args);
+    }
 
-	public void SetNodeValue(int nodeId, string controlName, double controlValue) {
-		List<object> args = new List<object> ();
-		args.Add (nodeId);
-		args.Add (controlName);
-		args.Add (controlValue);
-		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/node.set.value", args);
-	}
+    public void DeleteNode(int nodeId)
+    {
+        _oscHandler.SendMessageToClient(_clientId, "/node.delete", nodeId);
+    }
 
-	public void StartRecording(float headerFormat) {
-		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/recording.start", headerFormat);
-	}
+    public void StartRecording(float headerFormat)
+    {
+        _oscHandler.SendMessageToClient(_clientId, "/recording.start", headerFormat);
+    }
 
-	public void StopRecording(float headerFormat) {
-		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/recording.stop", "");
-	}
+    public void StopRecording(float headerFormat)
+    {
+        _oscHandler.SendMessageToClient(_clientId, "/recording.stop", "");
+    }
 
-	public int GetNewBus() {
-		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/bus.getID", "");
-		List<object> msg = OSCHandler.Instance.LookForPacket ();
-		if (msg.Count > 0 && (msg [0].ToString () == "/bus.ID")) {
-			return int.Parse(msg[1].ToString());
-		}
-		Debug.LogError("GetNewBus: No response from SuperCollider");
-		return 0;
-	}
+    public int GetNewBus()
+    {
+        _oscHandler.SendMessageToClient(_clientId, "/bus.getID", "");
+        return LookForPacket("/bus.ID");
+    }
 
-	public int GetBusFromGroup(int group) {
-		return _groupBus [group];	
-	}
+    public int BufferRead(string path)
+    {
+        _oscHandler.SendMessageToClient(_clientId, "/buffer.read", path);
+        return LookForPacket("/buffer.number");
+    }
 
-	private void AddBusToGroup(int group, int bus) {
-		_groupBus.Add (group, bus);
-	}
+    private int LookForPacket(string indicatorString)
+    {
+        List<object> msg = _oscHandler.LookForPacket();
+        if (msg.Count > 0 && (msg[0].ToString() == indicatorString))
+        {
+            return int.Parse(msg[1].ToString());
+        }
+        Debug.LogError(string.Format("LookForPacket for {0} not succesfull!", indicatorString));
+        return -1;
+    }
 
-	private bool DeleteBusfromGroup(int group) {
-		// TODO: Bus freigeben möglich?
-		return _groupBus.Remove (group);
-	}
+    //not used
+    public void SaveLoadSynth(string synthDef)
+    {
+        List<object> args = new List<object>();
+        args.Add(MemberInfoGetting.GetMemberName(() => synthDef));
+        args.Add(synthDef);
+        _oscHandler.SendMessageToClient(_clientId, "/synthDef.add", args);
+    }
 
-
-	public int CreateUsableGroup() {
-		int groupid = NewGroup();
-		int busid = GetNewBus();
-		AddBusToGroup (groupid, busid);
-		AddEffectToGroup("output", groupid, null);
-		return groupid;
-	}
-
-	public void CreateUsableGroupWithNodeID(int nodeId) {
-		if (!_groupBus.ContainsKey (nodeId)) {
-			NewGroupWithNodeId (nodeId);
-			int busid = GetNewBus ();
-			AddBusToGroup (nodeId, busid);
-			AddEffectToGroup ("output", nodeId, null);
-		} else {
-			Debug.LogError(string.Format("Group with ID: {0} already exists in Dictionary", nodeId));
-		}
-	}
-
-	public void DeleteGroup(int group) {
-		
-		if (DeleteBusfromGroup (group)) {
-			DeleteNode (group);
-		} else {
-			Debug.LogError (string.Format ("DeleteGroup: group {0} not existing", group));
-		}
-	}
-	#endregion
+    #endregion
 }

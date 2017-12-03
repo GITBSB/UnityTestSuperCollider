@@ -125,15 +125,15 @@ public class OSCHandler : MonoBehaviour
 			return _servers;
 		}
 	}
-	#endregion
-	
-	#region Methods
-	
-	/// <summary>
-	/// Ensure that the instance is destroyed when the game is stopped in the Unity editor
-	/// Close all the OSC clients and servers
-	/// </summary>
-	void OnApplicationQuit() 
+    #endregion
+
+    #region Methods
+
+    /// <summary>
+    /// Ensure that the instance is destroyed when the game is stopped in the Unity editor
+    /// Close all the OSC clients and servers
+    /// </summary>
+    void OnApplicationQuit() 
 	{
 		foreach(KeyValuePair<string,ClientLog> pair in _clients)
 		{

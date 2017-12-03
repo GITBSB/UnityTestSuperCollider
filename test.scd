@@ -103,6 +103,27 @@ s.freeAll;
 
 
 
+b = Buffer.read(s, thisProcess.nowExecutingPath.dirname +/+ "sounds/MiniKit_01(Full).wav");
+
+(
+SynthDef(\PlayBuf, {
+	arg amp=1, out=0, buf, rate=1, trigger=1, startPos=0, loop=0;
+	var sig;
+	sig = PlayBuf.ar(2, buf, rate, trigger, startPos, loop, doneAction:2);
+	Out.ar(out, sig * amp);
+}).add;
+)
+
+Synth(\PlayBuf, [\buf, 1]);
+
+
+thisProcess.nowExecutingPath.dirname
+
+
+
+
+
+
 (
 SynthDef("help-SinOsc", { arg freq=440, out;
     Out.ar(out, SinOsc.ar(freq, 0, 0.1))

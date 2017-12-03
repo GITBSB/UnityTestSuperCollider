@@ -91,6 +91,27 @@ SynthDef.new(\output, {
 
 
 
+b = Buffer.read(s, thisProcess.nowExecutingPath.dirname +/+ "sounds/MiniKit_01(Full).wav");
+b.bufnum
+
+c = Buffer.read(s, thisProcess.nowExecutingPath.dirname +/+ "sounds/MiniKit_01(Full).wav");
+c.bufnum
+
+
+(
+SynthDef(\PlayBuf, {
+	arg amp=1, out=0, buf , trigger=1, startPos=0, loop=0;
+	var sig;
+	sig = PlayBuf.ar(2, buf, BufRateScal.kr(buf) * rate, trigger, startPos, loop, doneAction:2);
+	Out.ar(out, sig * amp);
+}).add;
+)
+
+Synth(\PlayBuf, [\buf, b, \loop, 1]);
+
+
+
+
 ~group1 = Group.new;
 ~group2 = Group.new;
 
@@ -112,10 +133,10 @@ s.sendMsg("/g_new", 2, 0, 1);
 s.sendMsg("/g_new", 3, 0, 1);
 
 s.sendMsg("/s_new", "echo", 101, 0, 2, "in", 4, "out", 4);
-s.sendMsg("/s_new", "output", 102, 1, 2, "in", 4);
+s.sendMsg("/s_new", "GroupOutput", 102, 1, 2, "in", 4);
 
 s.sendMsg("/s_new", "reverb", 103, 0, 3, "in", 6, "out", 6);
-s.sendMsg("/s_new", "output", 104, 1, 3,"in", 6);
+s.sendMsg("/s_new", "GroupOutput", 104, 1, 3,"in", 6);
 
 a = Synth.head(2, \echo, [\in, 4, \out, 4, \nodeId, 4]);
 
@@ -124,17 +145,25 @@ s.options.numInputBusChannels
 s.sendMsg("/s_new", "kick", x=s.nextNodeID, 0, 1,"out", 4, "amp", 1);
 
 
-s.sendMsg("/n_free", 101)
+
+s.sendMsg("/n_free", 2)
 s.sendMsg("/g_freeAll", 2)
 
 s.sendMsg("/n_set", 3, "out", 6, "in", 6);
 s.sendMsg("/n_set", 2, "out", 4, "in", 4);
 ~group2.set(\in, 6);
 ~group2.set(\out, 6);
-Synth.new(\kick, [\out, 4, \amp, 1]);
+Synth.new(\kick);
 Synth.new(\kick, [\out, 6, \amp, 1]);
 
 s.meter;
 s.plotTree;
 
 s.freeAll;
+
+
+
+
+s.sendMsg("/s_new", "GroupOutput", 103, 1, 1, "in", 4);
+s.sendMsg("/n_set", 20, "vol", 0.3);
+s.sendMsg("/n_set", 1000, "vol", 0);
